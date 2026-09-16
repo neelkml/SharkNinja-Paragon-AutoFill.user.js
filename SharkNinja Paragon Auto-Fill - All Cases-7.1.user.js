@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SharkNinja Paragon Auto-Fill - All Cases
 // @namespace    http://tampermonkey.net/
-// @version      7.1
+// @version      7.2
 // @description  Auto-fills Paragon case creation form for all SharkNinja Loading Summary emails with built-in email editor
 // @author       @neelkml
 // @match        https://paragon-eu.amazon.com/hz/create-case*
@@ -101,16 +101,13 @@ We have opportunity to pull forward orders, so please confirm if there are any o
             color: '#DC143C',
             subject: `SharkNinja Germany Gmbh Loading Summary for K+N Poland - ${DATE}`,
             cc: [
-                'jrekas@sharkninja.com',
-                'svijayvagia@sharkninja.com',
-                'lukasz.miastowski@kuehne-nagel.com',
-                'tomasz.miastowski@kuehne-nagel.com',
-                'sn.outbound@kuehne-nagel.com',
                 'ewelina.franczak@kuehne-nagel.com',
-                'KWarzala@sharkninja.com',
-                'EMitchell@sharkninja.com',
-                'CMia@sharkninja.com',
-                'aggoleva@amazon.com'
+                'tomasz.miastowski@kuehne-nagel.com',
+                'milena.lechowska@kuehne-nagel.com',
+                'pl-sn-transport@Kuehne-Nagel.com',
+                'cmia@sharkninja.com',
+                'sn.inbound@kuehne-nagel.com',
+                'Lukasz.Miastowski@kuehne-nagel.com'
             ],
             body: `Good afternoon, team,
 
