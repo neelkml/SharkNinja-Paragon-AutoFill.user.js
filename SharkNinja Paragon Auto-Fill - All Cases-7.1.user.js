@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SharkNinja Paragon Auto-Fill - All Cases
 // @namespace    http://tampermonkey.net/
-// @version      7.2
+// @version      7.3
 // @description  Auto-fills Paragon case creation form for all SharkNinja Loading Summary emails with built-in email editor
 // @author       @neelkml
 // @match        https://paragon-eu.amazon.com/hz/create-case*
@@ -107,7 +107,8 @@ We have opportunity to pull forward orders, so please confirm if there are any o
                 'pl-sn-transport@Kuehne-Nagel.com',
                 'cmia@sharkninja.com',
                 'sn.inbound@kuehne-nagel.com',
-                'Lukasz.Miastowski@kuehne-nagel.com'
+                'Lukasz.Miastowski@kuehne-nagel.com',
+                'aggoleva@amazon.com'
             ],
             body: `Good afternoon, team,
 
