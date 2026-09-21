@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SharkNinja Paragon Auto-Fill - All Cases
 // @namespace    http://tampermonkey.net/
-// @version      7.3
+// @version      7.5
 // @description  Auto-fills Paragon case creation form for all SharkNinja Loading Summary emails with built-in email editor
 // @author       @neelkml
 // @match        https://paragon-eu.amazon.com/hz/create-case*
@@ -11,6 +11,9 @@
 
 (function () {
     'use strict';
+
+    // ─── SAFETY GUARD — never auto-fill on page load ───────────────────────
+    let _userInitiatedFill = false;
 
     // ─── DATE ─────────────────────────────────────────────────────────────────
     const TODAY = new Date();
@@ -108,6 +111,8 @@ We have opportunity to pull forward orders, so please confirm if there are any o
                 'cmia@sharkninja.com',
                 'sn.inbound@kuehne-nagel.com',
                 'Lukasz.Miastowski@kuehne-nagel.com',
+                'oliwia.kempinska@kuehne-nagel.com',
+                'kwarzala@sharkninja.com',
                 'aggoleva@amazon.com'
             ],
             body: `Good afternoon, team,
@@ -161,6 +166,11 @@ We have opportunity to pull forward orders, so please confirm if there are any o
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function setNativeValue(el, value) {
+        // Guard: refuse to run if not user-initiated
+        if (!_userInitiatedFill) {
+            console.warn('[SN AutoFill] Blocked non-user-initiated fill attempt');
+            return;
+        }
         const proto = el.tagName === 'TEXTAREA'
             ? window.HTMLTextAreaElement.prototype
             : window.HTMLInputElement.prototype;
@@ -212,9 +222,21 @@ We have opportunity to pull forward orders, so please confirm if there are any o
 
     // ─── FILL TAG INPUT ───────────────────────────────────────────────────────
     async function fillTagInput(el, emails) {
+        // Guard: refuse to run if not user-initiated
+        if (!_userInitiatedFill) return;
+
+        // Disable browser autofill on this field
+        el.setAttribute('autocomplete', 'off');
+        el.setAttribute('autocorrect', 'off');
+        el.setAttribute('autocapitalize', 'off');
+
         el.focus();
         await sleep(100);
+
         for (const email of emails) {
+            // Guard check on every iteration
+            if (!_userInitiatedFill) break;
+
             setNativeValue(el, email);
             await sleep(150);
             [
@@ -235,6 +257,12 @@ We have opportunity to pull forward orders, so please confirm if there are any o
 
     // ─── FILL FORM ────────────────────────────────────────────────────────────
     async function fillForm(caseConfig, statusEl) {
+        // Guard: must be user-initiated
+        if (!_userInitiatedFill) {
+            console.warn('[SN AutoFill] fillForm blocked — not user initiated');
+            return false;
+        }
+
         const results = { subject: false, cc: false, body: false };
 
         try {
@@ -277,6 +305,10 @@ We have opportunity to pull forward orders, so please confirm if there are any o
 
         } catch (err) {
             console.error('[SN AutoFill] Error:', err);
+        } finally {
+            // Always reset the guard after fill completes or errors
+            _userInitiatedFill = false;
+            console.log('[SN AutoFill] Fill guard reset');
         }
 
         const allOk   = Object.values(results).every(Boolean);
@@ -504,6 +536,9 @@ We have opportunity to pull forward orders, so please confirm if there are any o
                 btn.addEventListener('mousedown',  () => btn.style.transform = 'scale(0.97)');
                 btn.addEventListener('mouseup',    () => btn.style.transform = 'scale(1)');
                 btn.addEventListener('click', async () => {
+                    // ✅ Set user-initiated guard ONLY on explicit button click
+                    _userInitiatedFill = true;
+
                     grid.querySelectorAll('button').forEach(b => b.disabled = true);
                     editToggleBtn.disabled = true;
                     btn.textContent = '⏳ Filling...';
@@ -591,8 +626,16 @@ We have opportunity to pull forward orders, so please confirm if there are any o
         document.body.appendChild(btn);
     }
 
-    // ─── INIT ─────────────────────────────────────────────────────────────────
-    setTimeout(createLauncherButton, 2000);
-    window.addEventListener('load', () => setTimeout(createLauncherButton, 2000));
+    // ─── INIT — safe, single injection, no auto-fill ──────────────────────────
+    let _launcherCreated = false;
+    function safeInit() {
+        if (_launcherCreated) return;
+        _launcherCreated = true;
+        createLauncherButton();
+        console.log('[SN AutoFill] Launcher ready — waiting for user interaction');
+    }
+
+    setTimeout(safeInit, 2000);
+    window.addEventListener('load', () => setTimeout(safeInit, 2000));
 
 })();
